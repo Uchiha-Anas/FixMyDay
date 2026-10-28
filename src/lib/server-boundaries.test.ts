@@ -48,6 +48,10 @@ describe("routing guards", () => {
     expect(safeNextPath("//evil.example")).toBe("/dashboard");
     expect(safeNextPath("/\\evil.example")).toBe("/dashboard");
     expect(safeNextPath(null)).toBe("/dashboard");
+    // Browsers strip tabs/newlines from URLs, turning "/\t/x" into "//x".
+    expect(safeNextPath("/\t/evil.example")).toBe("/dashboard");
+    expect(safeNextPath("/\n/evil.example")).toBe("/dashboard");
+    expect(safeNextPath("/planner?generate=1#top")).toBe("/planner?generate=1#top");
   });
 
   it("protects app routes but not public ones", () => {

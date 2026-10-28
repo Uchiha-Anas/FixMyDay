@@ -119,7 +119,11 @@ Every user-owned table has `user_id → auth.users on delete cascade`, indexes o
 - API keys are read only on the server (`server-only` modules). Nothing secret uses `NEXT_PUBLIC_`.
 - Brain-dump input is capped at 4,000 characters, validated, and rate-limited (6/min, 100/day per user or IP). The rate limiter lives in memory per instance; use Redis/Upstash behind the same interface for multi-instance deployments.
 - The prompt tells the model to ignore instructions inside the user's text. Model output is never executed or used to build SQL or code.
-- Redirect targets (`?next=`) are restricted to same-site relative paths.
+- Redirect targets (`?next=`) are parsed the way browsers parse them and must resolve to the app's own origin.
+- Every response carries security headers (`next.config.ts`): `frame-ancestors 'none'` / `X-Frame-Options: DENY` against clickjacking, `nosniff`, a strict referrer policy, a restrictive permissions policy and HSTS.
+- The brain-dump endpoint stops reading a request body once it passes ~17 KB, even without a `Content-Length` header.
+- Anonymous rate limiting uses `x-real-ip` / `x-forwarded-for`, which Vercel sets itself. Behind another proxy, make sure the proxy overwrites these headers.
+- Apply **both** SQL migrations. The second one clamps signup display names and revokes direct execution of the trigger functions.
 
 ## Commands
 
